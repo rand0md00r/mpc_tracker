@@ -1,0 +1,117 @@
+shutdown_costmaps: false #当move_base在不活动状态时,是否关掉costmap.
+
+controller_frequency: 10.0 #向底盘控制移动话题cmd_vel发送命令的频率.
+controller_patience: 3.0 # 在空间清理操作执行前,控制器花多长时间等有效控制下发.
+
+planner_frequency: 1.0 #全局规划操作的执行频率.如果设置为0.0,则全局规划器仅在接收到新的目标点或者局部规划器报告路径堵塞时才会重新执行规划操作.
+planner_patience: 5.0 #在空间清理操作执行前,留给规划器多长时间来找出一条有效规划.
+
+oscillation_timeout: 5.0 #执行修复机制前,允许振荡的时长.
+oscillation_distance: 0.2 #来回运动在多大距离以上不会被认为是振荡.
+
+base_local_planner: "dwa_local_planner/DWAPlannerROS" #指定用于move_base的局部规划器名称. 默认是trajectory rollout
+base_global_planner: global_planner/GlobalPlanner #指定用于move_base的全局规划器插件名称.可替换为：carrot_planner/CarrotPlanner, global_planner/GlobalPlanner, navfn/NavfnROS
+
+global_costmap:
+  global_frame: map #地图坐标系
+  robot_base_frame: base_link #机器人坐标系
+  update_frequency: 1.0 #代价地图更新频率
+  publish_frequency: 1.0 #代价地图的发布频率
+  transform_tolerance: 1.0 #等待坐标变换发布信息的超时时间
+
+  origin_x: 0
+  origin_y: 0
+
+  plugins:
+    - {name: static_layer,            type: "costmap_2d::StaticLayer"}
+    - {name: obstacle_layer,          type: "costmap_2d::ObstacleLayer"}
+    - {name: inflation_layer,         type: "costmap_2d::InflationLayer"}
+
+  max_obstacle_height: 2.0
+  inflation_radius: 5.0
+  obstacle_range: 2.5
+  raytrace_range: 3.0
+  footprint: [[-0.5, -0.4], [-0.5, 0.4], [0.5, 0.4], [0.5, -0.4]]
+
+  static_layer:
+    enabled: true
+
+  obstacle_layer:
+    enabled:  true
+    max_obstacle_height: 1.8
+    origin_z: 0.0
+    z_resolution: 0.0
+    z_voxels: 2
+    unknown_threshold: 15
+    mark_threshold: 0
+    combination_method: 1  #0或1，用于更新地图上的代价值
+    track_unknown_space: true #true:分致命碰撞、自由区域和未知区域；false:代价值只分为致命碰撞和自由区域
+    obstacle_range: 2.0 #机器人检测障碍物的最大范围，只有在该范围内的障碍物才被认为是影响移动的障碍物
+    raytrace_range: 3.0 #实时清除代价地图上的障碍物的最大范围
+    publish_voxel_map: true
+    observation_sources: scan
+    inflation_radius: 10  #更改后无变化！官方无该参数
+    scan:
+      sensor_frame: laser
+      data_type: LaserScan 
+      topic: /scan
+      marking: true #是否使用该传感器来标记障碍物
+      clearing: true #是否可以使用该传感器来清除障碍物标记为自由空间
+      max_obstacle_height: 1.8
+      min_obstacle_height: 0.0
+
+
+  inflation_layer:
+    enabled:  true
+    cost_scaling_factor: 5.0 #膨胀过程中应用到代价值的比例因子
+    inflation_radius: 10
+
+
+local_costmap:
+  global_frame: map #里程计坐标系
+  robot_base_frame: base_link #机器人坐标系
+
+  update_frequency: 5.0 #代价地图更新频率
+  publish_frequency: 5.0 #代价地图的发布频率
+  transform_tolerance: 1.0 #等待坐标变换发布信息的超时时间
+
+  rolling_window: true #是否使用动态窗口，默认为false，在静态的全局地图中，地图不会变化
+  width: 8 # 局部地图宽度 单位是 m
+  height: 8 # 局部地图高度 单位是 m
+  resolution: 0.05 # 局部地图分辨率 单位是 m，一般与静态地图分辨率保持一致
+
+  plugins:
+  - {name: static_layer,        type: "costmap_2d::StaticLayer"}
+  - {name: obstacle_layer,      type: "costmap_2d::ObstacleLayer"}
+
+  max_obstacle_height: 2.0
+  inflation_radius: 0.6
+  obstacle_range: 2.5
+  raytrace_range: 3.0
+  footprint: [[-0.5, -0.4], [-0.5, 0.4], [0.5, 0.4], [0.5, -0.4]]
+
+  static_layer: #slam中构建的地图层
+    enabled: true
+
+  obstacle_layer:
+    enabled:  true
+    max_obstacle_height: 1.8
+    origin_z: 0.0
+    z_resolution: 0.0
+    z_voxels: 2
+    unknown_threshold: 15
+    mark_threshold: 0
+    combination_method: 1
+    track_unknown_space: true
+    obstacle_range: 2.0
+    raytrace_range: 3.0
+    publish_voxel_map: true
+    observation_sources: scan
+    scan:
+      sensor_frame: laser
+      data_type: LaserScan
+      topic: /scan
+      marking: true
+      clearing: true
+      max_obstacle_height: 1.8
+      min_obstacle_height: 0.0

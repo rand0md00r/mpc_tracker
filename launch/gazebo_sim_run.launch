@@ -1,0 +1,75 @@
+<launch>
+
+    <!--  ************** Global Parameters ***************  -->
+    <param name="use_sim_time" value="true"/>
+    <arg name="model"  default="scout" doc="opt: scout"/> 
+    <arg name="tf_prefix"  default=""/> 
+    <arg name="2d_map"  default="nav" doc="opt: nav, map, big_s_world, sq_world"/> 
+    <arg name="3d_map"  default="office" doc="opt: office, big_s_world, sq_world"/> 
+
+    <!--  ************** GAZEBO Simulator ***************  -->
+    <arg name="x_pos" default="0.0"/>
+    <arg name="y_pos" default="0.0"/>
+    <arg name="z_pos" default="0.0"/>
+    <arg name="roll" default="0"/>
+    <arg name="pitch" default="0"/>
+    <arg name="yaw" default="-1.507"/>
+    <arg name="gui" default="false"/>
+
+    <!--  ************** Robot model ***************  -->
+    <param name="robot_description" command="$(find xacro)/xacro $(find base_ws)/urdf/base.xacro" if="$(eval model == 'scout')"/>
+    
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find mpc_tracker)/worlds/$(arg 3d_map).world"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+    
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model servingbot -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -param robot_description" />
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+        <param name="publish_frequency" type="double" value="50.0" />
+    </node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+
+    <!--  ************** Map **************  -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find mpc_tracker)/map/$(arg 2d_map).yaml" output="screen">
+        <param name="frame_id" value="map"/>
+    </node>
+
+    <!--  ************** Localization **************  -->
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <rosparam file="$(find mpc_tracker)/params/amcl_params.yaml" command="load" />
+        <param name="initial_pose_x"            value="$(arg x_pos)"/>
+        <param name="initial_pose_y"            value="$(arg y_pos)"/>
+        <param name="initial_pose_a"            value="$(arg yaw)"/>
+    </node>
+
+    <!--  ************** Navigation ***************  -->    
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <rosparam file="$(find mpc_tracker)/params/move_base_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find mpc_tracker)/params/move_base_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find mpc_tracker)/params/move_base_params.yaml" command="load" />
+        
+        <!-- Global Planner -->
+        <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+        <param name="planner_frequency" value="10.0" />
+        <param name="planner_patience" value="5.0" />
+        <rosparam file="$(find mpc_tracker)/params/global_planner_params.yaml" command="load" />
+        
+        <!-- Local Planner -->
+        <remap from="/cmd_vel" to="/fake_cmd_vel" />
+    </node>
+
+    <!--  ************** MPC Node **************  -->
+    <include file="$(find mpc_tracker)/launch/mpc_tracker.launch" />
+
+    <!--  ************** Visualisation **************  -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mpc_tracker)/rviz/rviz_navigation.rviz"/>
+    
+
+</launch>

@@ -1,0 +1,15 @@
+<launch>
+
+    <!--  ************** MPC Node **************  -->
+    <node name="mpc_tracker_node" pkg="mpc_tracker" type="mpc_tracker_node" output="screen" >
+        <rosparam file="$(find mpc_tracker)/params/0718_mpc_params.yaml" command="load" />
+
+        <!--  sub Global Path  -->
+        <remap from="/move_base/GlobalPlanner/plan" to="/move_base/GlobalPlanner/plan" />
+        <!-- <remap from="/move_base/GlobalPlanner/plan" to="/move_base/SmacPlannerHybrid/plan" /> -->
+
+        <!--  sub Odom Path  -->
+        <remap from="/odom_gazebo" to="/odom_gazebo" />
+
+    </node>
+</launch>
