@@ -57,7 +57,7 @@
         
         <!-- Global Planner -->
         <param name="base_global_planner" value="global_planner/GlobalPlanner" />
-        <param name="planner_frequency" value="10.0" />
+        <param name="planner_frequency" value="5.0" />
         <param name="planner_patience" value="5.0" />
         <rosparam file="$(find mpc_tracker)/params/global_planner_params.yaml" command="load" />
         
@@ -70,6 +70,8 @@
 
     <!--  ************** Visualisation **************  -->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mpc_tracker)/rviz/rviz_navigation.rviz"/>
-    
+
+    <!--  ************** Error Graph **************  -->
+    <!-- <node name="drawGraph" pkg="mpc_tracker" type="draw_graph.py" output="screen"/> -->
 
 </launch>
