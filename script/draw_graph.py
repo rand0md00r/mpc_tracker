@@ -86,7 +86,6 @@ def plot_position_error():
             dy_array.append(dy)
             error = np.sqrt(dx**2 + dy**2)
 
-
             # Append position error, time, linear velocity, and angular velocity to the lists
             position_error.append(error)
             time.append(rospy.Time.now().to_sec() - start_time)

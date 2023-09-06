@@ -73,6 +73,7 @@ void MPCNode::setParameters()
     // Init variables
     _twist_msg  = geometry_msgs::Twist();
     _mpc_traj   = nav_msgs::Path();
+    _error_msg  = geometry_msgs::Pose();
 
     _goal_received = false;
     _goal_reached  = false;
@@ -136,6 +137,7 @@ void MPCNode::setSubPub()
     _pub_odompath = _nh.advertise<nav_msgs::Path>("/mpc_reference", 1);
     _pub_mpctraj  = _nh.advertise<nav_msgs::Path>("/mpc_trajectory", 1);
     _pub_twist    = _nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+    _pub_error    = _nh.advertise<geometry_msgs::Pose>("/error_topic", 1);
     
     //Timer for Control loop
     _timer1 = _nh.createTimer(ros::Duration((1.0)/_contr_freq), &MPCNode::controlLoopCB, this);
@@ -331,6 +333,9 @@ tuple<VectorXd, VectorXd> MPCNode::calculateActionState(robot_state cur_st)
 
     const double cte  = polyeval(coeffs, 0.0);
     const double etheta = atan(coeffs[1]);
+    _error_msg.position.y = cte;
+    _error_msg.orientation.z = etheta;
+    _pub_error.publish(_error_msg);
 
     // Update state for action time
     VectorXd state(6);

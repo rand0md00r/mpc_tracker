@@ -72,6 +72,6 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mpc_tracker)/rviz/rviz_navigation.rviz"/>
 
     <!--  ************** Error Graph **************  -->
-    <!-- <node name="drawGraph" pkg="mpc_tracker" type="draw_graph.py" output="screen"/> -->
+    <node name="drawGraph" pkg="mpc_tracker" type="draw_error.py" output="screen"/>
 
 </launch>

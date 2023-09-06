@@ -34,7 +34,7 @@ class MPCNode
         MPC _mpc;
 
         ros::Subscriber _sub_odom, _sub_path, _sub_goal, _sub_amcl, _sub_base_vel;
-        ros::Publisher _pub_odompath, _pub_twist, _pub_mpctraj;
+        ros::Publisher _pub_odompath, _pub_twist, _pub_mpctraj, _pub_error;
         ros::Publisher _pub_ackermann;
         ros::Timer _timer1;
 
@@ -47,6 +47,7 @@ class MPCNode
         nav_msgs::Odometry _odom;
         nav_msgs::Path _odom_path, _mpc_traj; 
         geometry_msgs::Twist _twist_msg;
+        geometry_msgs::Pose _error_msg;
 
         bool _velOdom_flag, _poseOdom_flag, _odom_flag;
 
